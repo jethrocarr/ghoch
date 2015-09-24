@@ -1,31 +1,28 @@
 var express = require('express');
 var path = require('path');
+var fs = require('fs');
 var favicon = require('serve-favicon');
 var logger = require('morgan');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
 
-var routes = require('./routes/index');
-var url = require('./routes/url');
-
 
 var app = express();
 
+// Configuration
+app.set('port', process.env.PORT || 3000);
+app.set('base_url', process.env.BASE_URL || 'http://localhost:' + app.get('port') + '/');
+app.set('db_database', process.env.DB_DATBASE || 'development');
+app.set('db_host', process.env.DB_DATBASE || 'localhost');
+app.set('db_username', process.env.DB_USERNAME || 'user');
+app.set('db_password', process.env.DB_PASSWORD || 'password');
+app.set('db_dialect', process.env.DB_DIALECT || 'sqlite');
 
-
-// check ENVs
-if (!process.env.BASE_URL) {
-  console.log('Mandatory: You must set env BASE_URL');
-  process.exit(1);
-}
-
-
-
-
-// view engine setup
+// Setup Views
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'jade');
 
+// Setup Express Framework
 // uncomment after placing your favicon in /public
 //app.use(favicon(path.join(__dirname, 'public', 'favicon.ico')));
 app.use(logger('dev'));
@@ -34,8 +31,14 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
-app.use('/', routes);
-app.use('/url/', url);
+// Dynamically load Controllers (routes)
+fs.readdirSync('./controllers').forEach(function (file) {
+  if (file.substr(-3) == '.js') {
+    route = require('./controllers/' + file);
+    route.controller(app);
+  }
+});
+
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {

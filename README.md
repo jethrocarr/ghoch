@@ -12,6 +12,7 @@ Ghoch provides the following features:
   the original URL) which will redirect to it when requested.
 * Counts the number of requests for a particular URL and allows an authorised
   user to retrive the count.
+* SQL-backed.
 
 Ghoch does not currently (but should longer term) provide:
 * Any form of abuse-protection.
