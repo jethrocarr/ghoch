@@ -1,0 +1,7 @@
+extends layout
+
+block content
+  h1 New URL created
+  p Created click tracker URL #[a(href='#{url_redirect}') #{url_redirect}] from original URL #[a(href='#{url_orig}') #{url_orig}].
+  p This link is valid forever (ie does not expire).
+  p You can check the click statistics by visiting: #[a(href='#{url_stats}') #{url_stats}].

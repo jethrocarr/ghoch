@@ -1,0 +1,11 @@
+extends layout
+
+block content
+  h1 Create a click tracker
+  p Enter a URL here to have a click tracker generate. These click trackers are permanent (do not expire)
+  form(name="url_create", method="post")
+    div.input
+      span_label URL
+      input(type="text", name="url")
+    div.actions
+      input(type="submit", value="Create")
