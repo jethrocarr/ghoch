@@ -11,7 +11,7 @@ var app = express();
 
 // Configuration
 app.set('port', process.env.PORT || 3000);
-app.set('base_url', process.env.BASE_URL || 'http://localhost:' + app.get('port') + '/');
+app.set('base_url', process.env.BASE_URL || 'http://localhost:' + app.get('port'));
 app.set('db_database', process.env.DB_DATBASE || 'development');
 app.set('db_host', process.env.DB_DATBASE || 'localhost');
 app.set('db_username', process.env.DB_USERNAME || 'user');
@@ -31,11 +31,14 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
+// Load models
+var models    = require('./models')({app: app});
+
 // Dynamically load Controllers (routes)
 fs.readdirSync('./controllers').forEach(function (file) {
   if (file.substr(-3) == '.js') {
     route = require('./controllers/' + file);
-    route.controller(app);
+    route.controller(app, models);
   }
 });
 

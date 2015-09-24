@@ -2,14 +2,13 @@
  * Provides all the logic for querying, manipulating and using redirect URLs
  */
 
-module.exports.controller = function(app) {
+module.exports.controller = function(app, models) {
 
   var express   = require('express');
   var util      = require('util');
   var router    = express.Router({mergeParams: true});
   var crypto    = require('crypto');
   var validator = require('validator');
-  var models    = require('../models')({app: app});
 
   // Custom validators
   validator.extend('isMD5', function (str) {
@@ -48,6 +47,10 @@ module.exports.controller = function(app) {
           Url.increment('count_clicks'); // by +1
           console.log('Click count now at: ' + Url.dataValues.count_clicks);
 
+          res.header('Cache-Control', 'private, no-cache, no-store, must-revalidate');
+          res.header('Expires', '-1');
+          res.header('Pragma', 'no-cache');
+
           res.redirect(301, Url.dataValues.url);
         }
       });
@@ -80,32 +83,35 @@ module.exports.controller = function(app) {
          */
 
         var hashed_url = crypto.createHash('md5').update(req.body.url).digest('hex');
-        var redirect_url = process.env.BASE_URL + '/url/' + hashed_url
+        var redirect_url = app.get('base_url') + '/url/' + hashed_url
 
         console.log('Hashed version of URL "' + req.body.url + '" is "' + hashed_url + '"');
 
 
-        // TODO - does this entry already exist?
-
-        // Create a DB entry
-        models.Url.create({
-          hash: hashed_url,
-          url: req.body.url,
-          count_clicks: 0
-        })
-        .error(function(err){
-          // This should never happen unless the DB is rather unhappy
-          console.log('An unexpected error occured when trying to create the URL');
-          res.status(500).send('{success: false, message: "Unexpected server failure on URL save"}');
-        })
-
+        models.Url.findOne({ where: {hash: hashed_url} }).then(function(Url) {
+          if (Url) {
+            console.log('Note, URL already exists. Just redirecting user to page');
+          } else {
+            // Create a DB entry
+            models.Url.create({
+              hash: hashed_url,
+              url: req.body.url,
+              count_clicks: 0
+            })
+            .error(function(err){
+              // This should never happen unless the DB is rather unhappy
+              console.log('An unexpected error occured when trying to create the URL');
+              res.send('{success: false, message: "Unexpected server failure on URL save"}');
+            })
+          }
+        });
 
         // We are good to go! :-)
         if (req.accepts('html')) {
           res.status(200).render('url_created', {
             url_orig: req.body.url,
             url_redirect: redirect_url,
-            url_stats: process.env.BASE_URL + '/stats/' + hashed_url
+            url_stats: '/stats/' + hashed_url
           });
         } else {
           res.status(200).json('{success: true}');
