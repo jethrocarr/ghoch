@@ -12,8 +12,8 @@ var app = express();
 // Configuration
 app.set('port', process.env.PORT || 3000);
 app.set('base_url', process.env.BASE_URL || 'http://localhost:' + app.get('port'));
-app.set('db_database', process.env.DB_DATBASE || 'development');
-app.set('db_host', process.env.DB_DATBASE || 'localhost');
+app.set('db_database', process.env.DB_DATABASE || 'development');
+app.set('db_host', process.env.DB_HOST || 'localhost');
 app.set('db_username', process.env.DB_USERNAME || 'user');
 app.set('db_password', process.env.DB_PASSWORD || 'password');
 app.set('db_dialect', process.env.DB_DIALECT || 'sqlite');
