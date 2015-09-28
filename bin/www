@@ -7,6 +7,9 @@
 var app = require('../app');
 var debug = require('debug')('ghoch:server');
 var http = require('http');
+var net = require('net');
+var fs = require('fs');
+
 
 /**
  * Get port from environment and store in Express.
@@ -70,8 +73,30 @@ function onError(error) {
       break;
     case 'EADDRINUSE':
       console.error(bind + ' is already in use');
-      process.exit(1);
+
+      if (typeof port === 'string') {
+        // We can only cleanup stale socket files, can't do anything about a
+	// process listening to a port still
+        var clientSocket = new net.Socket();
+        clientSocket.on('error', function(e) { // handle error trying to talk to server
+            if (e.code == 'ECONNREFUSED') {  // No other server listening
+                fs.unlinkSync(port);
+                server.listen(port, function() { //'listening' listener
+                    console.log('Replacing abandoned socket file and launching');
+                });
+            }
+        });
+
+        clientSocket.connect({path: port}, function() {
+            console.log('Server already running on this socket, quitting...');
+            process.exit(1);
+        });
+      } else {
+        process.exit(1);
+      }
+
       break;
+
     default:
       throw error;
   }

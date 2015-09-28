@@ -39,7 +39,7 @@ You can launch the app in a development mode with a simple:
 
 All configuration is via environmentals, options are:
 
-* PORT - defaults to "3000".
+* PORT - defaults to "3000". Supports being set to a UNIX socket as well.
 * BASE_URL - defaults to "localhost:PORT"
 * DB_HOST - defaults to "localhost"
 * DB_DATABASE - defaults to "development"
