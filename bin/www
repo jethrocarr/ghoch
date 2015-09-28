@@ -72,11 +72,9 @@ if (cluster.isMaster) {
   var server = http.createServer(app);
 
   /**
-   * Listen on provided port, on all network interfaces. We take the umask
-   * so we can set the socket permissions correctly.
+   * Listen on provided port, on all network interfaces.
    */
 
-  var socket_umask = process.umask(0000);
   server.listen(port);
   server.on('error', onError);
   server.on('listening', onListening);
@@ -133,7 +131,6 @@ function onError(error) {
  */
 
 function onListening() {
-  process.umask(socket_umask); // Fix permissions of socket for workers
   var addr = server.address();
   var bind = typeof addr === 'string'
     ? 'pipe ' + addr
