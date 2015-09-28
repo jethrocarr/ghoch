@@ -11,6 +11,16 @@ var net = require('net');
 var fs = require('fs');
 var cluster = require('cluster');
 
+
+
+/**
+ * Get port from environment and store in Express.
+*/
+
+var port = normalizePort(process.env.PORT || '3000');
+app.set('port', port);
+
+
 /**
  * Setup cluster (multi-process for performance and reliability)
  */
@@ -19,9 +29,24 @@ workers = app.get('workers');
 
 if (cluster.isMaster) {
   /**
-   * MASTER: Launch slave workers
+   * If launched using sockets, we need to handle the existance of any on-disk
+   * socket files that might be lingering around. The annoying part is that we
+   * need to check if they're active before we blow them away or not.
    */
 
+  if (typeof port === 'string') {
+    fs.stat(port, function (err, stats) {
+      if (stats) {
+        console.log('Removing stale UNIX socket: ' + port);
+        fs.unlinkSync(port);
+      }
+    });
+  }
+
+
+  /**
+   * MASTER: Launch slave workers
+   */
   console.log('Launching cluster master with '+ workers +' workers');
 
   for (var i = 0; i < workers; i++) {
@@ -31,17 +56,14 @@ if (cluster.isMaster) {
   cluster.on('exit', function(worker, code, signal) {
     console.log('worker ' + worker.process.pid + ' died');
   });
+
 } else {
+
   /**
    * SLAVE: Setup listener
    */
 
-  /**
-   * Get port from environment and store in Express.
-   */
-
-  var port = normalizePort(process.env.PORT || '3000');
-  app.set('port', port);
+  console.log('Launching slave listener '+ process.pid);
 
   /**
    * Create HTTP server.
@@ -50,13 +72,14 @@ if (cluster.isMaster) {
   var server = http.createServer(app);
 
   /**
-   * Listen on provided port, on all network interfaces.
+   * Listen on provided port, on all network interfaces. We take the umask
+   * so we can set the socket permissions correctly.
    */
 
+  var socket_umask = process.umask(0000);
   server.listen(port);
   server.on('error', onError);
   server.on('listening', onListening);
-
 }
 
 
@@ -85,9 +108,6 @@ function normalizePort(val) {
  */
 
 function onError(error) {
-  if (error.syscall !== 'listen') {
-    throw error;
-  }
 
   var bind = typeof port === 'string'
     ? 'Pipe ' + port
@@ -101,30 +121,8 @@ function onError(error) {
       break;
     case 'EADDRINUSE':
       console.error(bind + ' is already in use');
-
-      if (typeof port === 'string') {
-        // We can only cleanup stale socket files, can't do anything about a
-	// process listening to a port still
-        var clientSocket = new net.Socket();
-        clientSocket.on('error', function(e) { // handle error trying to talk to server
-            if (e.code == 'ECONNREFUSED') {  // No other server listening
-                fs.unlinkSync(port);
-                server.listen(port, function() { //'listening' listener
-                    console.log('Replacing abandoned socket file and launching');
-                });
-            }
-        });
-
-        clientSocket.connect({path: port}, function() {
-            console.log('Server already running on this socket, quitting...');
-            process.exit(1);
-        });
-      } else {
-        process.exit(1);
-      }
-
+      process.exit(1);
       break;
-
     default:
       throw error;
   }
@@ -135,6 +133,7 @@ function onError(error) {
  */
 
 function onListening() {
+  process.umask(socket_umask); // Fix permissions of socket for workers
   var addr = server.address();
   var bind = typeof addr === 'string'
     ? 'pipe ' + addr
