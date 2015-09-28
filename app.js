@@ -5,12 +5,14 @@ var favicon = require('serve-favicon');
 var logger = require('morgan');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
+var os = require('os');
 
 
 var app = express();
 
 // Configuration
 app.set('port', process.env.PORT || 3000);
+app.set('workers', process.env.WORKERS || os.cpus().length);
 app.set('base_url', process.env.BASE_URL || 'http://localhost:' + app.get('port'));
 app.set('db_database', process.env.DB_DATABASE || 'development');
 app.set('db_host', process.env.DB_HOST || 'localhost');

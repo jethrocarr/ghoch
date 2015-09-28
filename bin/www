@@ -9,28 +9,56 @@ var debug = require('debug')('ghoch:server');
 var http = require('http');
 var net = require('net');
 var fs = require('fs');
-
-
-/**
- * Get port from environment and store in Express.
- */
-
-var port = normalizePort(process.env.PORT || '3000');
-app.set('port', port);
+var cluster = require('cluster');
 
 /**
- * Create HTTP server.
+ * Setup cluster (multi-process for performance and reliability)
  */
 
-var server = http.createServer(app);
+workers = app.get('workers');
 
-/**
- * Listen on provided port, on all network interfaces.
- */
+if (cluster.isMaster) {
+  /**
+   * MASTER: Launch slave workers
+   */
 
-server.listen(port);
-server.on('error', onError);
-server.on('listening', onListening);
+  console.log('Launching cluster master with '+ workers +' workers');
+
+  for (var i = 0; i < workers; i++) {
+    cluster.fork();
+  }
+
+  cluster.on('exit', function(worker, code, signal) {
+    console.log('worker ' + worker.process.pid + ' died');
+  });
+} else {
+  /**
+   * SLAVE: Setup listener
+   */
+
+  /**
+   * Get port from environment and store in Express.
+   */
+
+  var port = normalizePort(process.env.PORT || '3000');
+  app.set('port', port);
+
+  /**
+   * Create HTTP server.
+   */
+
+  var server = http.createServer(app);
+
+  /**
+   * Listen on provided port, on all network interfaces.
+   */
+
+  server.listen(port);
+  server.on('error', onError);
+  server.on('listening', onListening);
+
+}
+
 
 /**
  * Normalize a port into a number, string, or false.
