@@ -17,7 +17,8 @@ module.exports = function(sequelize, DataTypes) {
       type: DataTypes.INTEGER,
     }
   },{
-    freezeTableName: true
+    freezeTableName: true,   // Don't change table names
+    paranoid: true           // Deletes are hidden rather than permanent
   });
 
   Url.sync({force: false}).then(function () {

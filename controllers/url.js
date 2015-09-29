@@ -128,7 +128,27 @@ module.exports.controller = function(app, models) {
 
   /* DELETE a URL */
   app.delete('/url/:id', function(req, res) {
-    res.send("got a delete request for" + req.params.id);
+
+    if (validator.isMD5(req.params.id)) {
+      models.Url.findOne({ where: {hash: req.params.id} }).then(function(Url) {
+        if (!Url) {
+          res.status(404).send('{error: "client", message: "The requested URL does not exist"}');
+        } else {
+          console.log('Delete requested for URL: '+ req.params.id);
+
+          Url.destroy().then(function() {
+            console.log('Deleted!');
+            res.send({"status": "success", "message": "Deletion completed"});
+          });
+
+        }
+      });
+
+    } else {
+      console.log("An invalid MD5sum was provided");
+      res.status(404).send('{error: "client", message: "Not a valid URL hash}');
+    }
+
   });
 
 }
