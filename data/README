@@ -1,0 +1,2 @@
+This directory is only used if using SQLite (which should only ever be used
+for development purposes).
