@@ -34,8 +34,8 @@ Ghoch does not currently (but should longer term) provide:
 
 You can launch the app in a development mode with a simple:
 
-   npm install
-   npm start
+    npm install
+    npm start
 
 All configuration is via environmentals, options are:
 
