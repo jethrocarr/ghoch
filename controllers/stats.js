@@ -43,6 +43,7 @@ module.exports.controller = function(app, models) {
         } else {
           console.log('Click count for '+ Url.dataValues.url +' requested, current count is: ' + Url.dataValues.count_clicks);
 
+          // TODO - missing stats per URL here
           res.status(200).render('stats_per_url', {
             url_orig: Url.dataValues.url,
             count_total: Url.dataValues.count_clicks
