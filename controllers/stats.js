@@ -41,7 +41,7 @@ module.exports.controller = function(app, models) {
         if (!Url) {
           res.status(404).send('{error: "client", message: "The requested URL does not exist"}');
         } else {
-          console.log('Click count for '+ Url.dataValues.url +' requested, current count is: ' + Url.dataValues.count_total);
+          console.log('Click count for '+ Url.dataValues.url +' requested, current count is: ' + Url.dataValues.count_clicks);
 
           res.status(200).render('stats_per_url', {
             url_orig: Url.dataValues.url,
@@ -52,7 +52,7 @@ module.exports.controller = function(app, models) {
 
     } else {
       console.log("An invalid MD5sum was provided");
-      res.status(404).send('{error: "client", message: "Not a valid URL hash}');
+      res.status(404).json({"status": "client_error", "message": "Not a valid URL hash"});
     }
 
   });

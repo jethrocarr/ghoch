@@ -39,7 +39,7 @@ module.exports.controller = function(app, models) {
      
       models.Url.findOne({ where: {hash: req.params.id} }).then(function(Url) {
         if (!Url) {
-          res.status(404).send('{error: "client", message: "The requested URL does not exist"}');
+          res.status(404).json({"status": "client_error", "message": "The requested URL does not exist"});
         } else {
           console.log('Match found, redirecting to: '+ Url.dataValues.url);
 
@@ -57,7 +57,7 @@ module.exports.controller = function(app, models) {
 
     } else {
       console.log("An invalid MD5sum was provided");
-      res.status(404).send('{error: "client", message: "Not a valid URL hash}');
+      res.status(404).json({"status": "client_error", "message": "Not a valid URL hash"});
     }
 
   });
@@ -101,7 +101,7 @@ module.exports.controller = function(app, models) {
             .error(function(err){
               // This should never happen unless the DB is rather unhappy
               console.log('An unexpected error occured when trying to create the URL');
-              res.send('{success: false, message: "Unexpected server failure on URL save"}');
+              res.status(500).json({"status": "error", "message": "Unexpected server failure on URL save"});
             })
           }
         });
@@ -114,20 +114,29 @@ module.exports.controller = function(app, models) {
             url_stats: '/stats/' + hashed_url
           });
         } else {
-          res.status(200).json('{success: true}');
+          res.status(200).json({
+            "status": "success",
+            "message": "Click tracker created",
+            "hash": hashed_url,
+            "url_orig": req.body.url,
+            "url_redirect": redirect_url,
+            "url_stats": '/stats/' + hashed_url,
+          });
         }
 
       } else {
-        res.status(400).send('{success: false, message: "Client provided an invalid URL"}');
+        res.status(400).json({"status": "client_error", "message": "Client provided an invalid URL"});
       }
     } else {
-      res.status(400).send('{success: false, message: "Client did not provide field URL"}');
+      res.status(400).json({"status": "client_error", "message": "Client did not provide field URL"});
     }
 
   });
 
   /* DELETE a URL */
   app.delete('/url/:id', function(req, res) {
+
+    // TODO - Auth here!!
 
     if (validator.isMD5(req.params.id)) {
       models.Url.findOne({ where: {hash: req.params.id} }).then(function(Url) {
@@ -146,7 +155,7 @@ module.exports.controller = function(app, models) {
 
     } else {
       console.log("An invalid MD5sum was provided");
-      res.status(404).send('{error: "client", message: "Not a valid URL hash}');
+      res.status(404).json({"status": "client_error", "message": "Not a valid URL hash"});
     }
 
   });
