@@ -49,6 +49,12 @@ All configuration is via environmentals, options are:
 * DB_DIALECT - defaults to "sqlite", but should work fine with with all Sequelise supported DBs including MySQL and Postgres.
 
 
+A simple health check is available at /health which will always return 200 for
+healthy, or in the event of failure either a 500 code or a timeout.
+
+    $ curl -i http://localhost:3000/health
+    HTTP/1.1 200 OK
+    {"status":"healthy"}
 
 
 # License
