@@ -9,3 +9,23 @@ block content
       input(type="text", name="url")
     div.actions
       input(type="submit", value="Create")
+  br
+  br
+  h1 Active Trackers
+  p Top 50 trackers, most recently clicked first
+  table
+    thead
+    tbody
+    tr
+      td Get Stats
+      td URL
+      td Click Counter
+      td Time Created
+      td Last Clicked
+    for url in Url_array
+      tr
+          td #[a(href='../stats/' + url.getDataValue('hash')) Stats]
+          td= url.getDataValue('url')
+          td= url.getDataValue('count_clicks')
+          td= url.getDataValue('createdAt')
+          td= url.getDataValue('updatedAt')

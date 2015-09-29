@@ -17,11 +17,34 @@ module.exports.controller = function(app, models) {
 
 
   /*
-   * We don't list all URLs, instead we display a form that allows new URLs to be
-   * requested.
+   * List the top 50 latest URLs and the form to add a new URL entry.
+   * TODO: Write proper pagination and search
    */
   app.get('/url', function(req, res, next) {
-    res.render('url', {});
+
+    function fetch_urls (fn) {
+      models.Url.findAll({
+        limit: 50,
+        order: 'updatedAt DESC',
+      })
+      .then(function(Url_array) {
+        fn(Url_array);
+      })
+    };
+
+    fetch_urls(function(Url_array) {
+
+      if (req.accepts('html')) {
+        res.render('url', {"Url_array": Url_array});
+      } else {
+        res.status(200).json({
+          "status": "success",
+          "message": "TODO: Write this feature",
+        })
+      }
+
+    });
+
   });
 
 
