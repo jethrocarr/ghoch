@@ -3,4 +3,17 @@ extends layout
 block content
   h1 Statistics for #[a(href='#{url_orig}') #{url_orig}]
   p Current click count is #{count_total}
-  
+  br
+  h1 Platform Metrics: 
+
+  table
+    thead
+    tbody
+    tr
+      td Platform
+      td Click Counter
+    for platform in PlatformStats_array
+      tr
+        td= platform.getDataValue('platform')
+        td= platform.getDataValue('count_clicks')
+

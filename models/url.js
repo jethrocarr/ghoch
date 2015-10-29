@@ -18,11 +18,13 @@ module.exports = function(sequelize, DataTypes) {
     }
   },{
     freezeTableName: true,   // Don't change table names
-    paranoid: true           // Deletes are hidden rather than permanent
-  });
+    paranoid: true,          // Deletes are hidden rather than permanent
+    classMethods: {
+      associate: function(models) {
+        Url.hasMany(models.PlatformStats);
+      }
+    }
 
-  Url.sync({force: false}).then(function () {
-    console.log('New table created for Url model');
   });
 
   return Url;

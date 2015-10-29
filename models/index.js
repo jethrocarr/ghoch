@@ -51,8 +51,13 @@ module.exports = function (params) {
 
   Object.keys(db).forEach(function(modelName) {
       if ("associate" in db[modelName]) {
-            db[modelName].associate(db);
-              }
+        console.log("Associating relationship for model: "+ modelName)
+        db[modelName].associate(db);
+      }
+  });
+
+  sequelize.sync({force: false, logging: console.log}).then(function () {
+    console.log('Performing sequelize sync...');
   });
 
   db.sequelize = sequelize;

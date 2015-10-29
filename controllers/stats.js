@@ -43,11 +43,29 @@ module.exports.controller = function(app, models) {
         } else {
           console.log('Click count for '+ Url.dataValues.url +' requested, current count is: ' + Url.dataValues.count_clicks);
 
-          // TODO - missing stats per URL here
-          res.status(200).render('stats_per_url', {
-            url_orig: Url.dataValues.url,
-            count_total: Url.dataValues.count_clicks
+          // We already have the total clicks, now fetch the per-platform stats.
+          function fetch_PlatformStats (fn) {
+            models.PlatformStats
+            .findAll({
+              order: 'count_clicks DESC',
+              where: { UrlId:    Url.dataValues.id },
+            }).then(function(StatsArray) {
+              fn(StatsArray);
+            })
+          };
+
+
+          PlatformStats_array = fetch_PlatformStats(function(StatsArray) {
+
+            // Render
+            res.status(200).render('stats_per_url', {
+              url_orig: Url.dataValues.url,
+              count_total: Url.dataValues.count_clicks,
+              PlatformStats_array: StatsArray,
+            });
+
           });
+
         }
       });
 

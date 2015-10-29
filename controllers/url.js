@@ -70,6 +70,43 @@ module.exports.controller = function(app, models) {
           Url.increment('count_clicks'); // by +1
           console.log('Click count now at: ' + Url.dataValues.count_clicks);
 
+
+          // Report on the user agent. This is a little more complex, we need
+          // to create an entry for each platform if it doens't already exist
+          // and increment it by +1 if it does.
+
+          console.log('Request made with platform: ' + req.useragent.platform);
+
+          models.PlatformStats
+          .findOrCreate({
+            where: {
+              // Check if a count already exists for this URL + Platform
+              UrlId:    Url.dataValues.id,
+              platform: req.useragent.platform,
+            },
+            defaults: {
+              // Platform doesn't exist, create an entry with the following values:
+              UrlId:        Url.dataValues.id,
+              platform:     req.useragent.platform,
+              count_clicks: 0,
+            }})
+          .spread(function(PlatformCount, created) {
+
+            // Moar counter incrementz please!
+            PlatformCount.increment('count_clicks'); // by +1
+
+            if (created) {
+              console.log('First time this platform has been seen, count set to 1');
+            } else {
+              console.log('Total clicks for this platform is: ' + PlatformCount.dataValues.count_clicks);
+            }
+          })
+          .error(function(err){
+            // This should never happen unless the DB is rather unhappy
+            console.log('Warning: Unable to search/record the user\'s platform due to a DB error');
+          });
+
+          // Return redirect to user.
           res.header('Cache-Control', 'private, no-cache, no-store, must-revalidate');
           res.header('Expires', '-1');
           res.header('Pragma', 'no-cache');

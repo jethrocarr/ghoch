@@ -6,6 +6,7 @@ var logger = require('morgan');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
 var os = require('os');
+var useragent = require('express-useragent');
 
 
 var app = express();
@@ -32,6 +33,10 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
+
+// Use express-useragent to profile the type of device so we can record
+// various stats about it.
+app.use(useragent.express());
 
 // Load models
 var models    = require('./models')({app: app});
