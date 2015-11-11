@@ -34,6 +34,10 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
+// Allow access to the dist files in bootstrap
+app.use('/bootstrap', express.static(__dirname + '/node_modules/bootstrap/dist/'));
+
+
 // Use express-useragent to profile the type of device so we can record
 // various stats about it.
 app.use(useragent.express());
